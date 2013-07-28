@@ -25,6 +25,7 @@ import shlex, subprocess
 import pwd, logging
 
 from .limit import RunProfile, LimitStatus, SYSERROR, TIMEOUT, RUNTIME, ERRCUT
+from threading import Timer
 
 # Get logger
 # TODO: change logging method
@@ -43,7 +44,8 @@ except:
 
 # Main Function limit_run Begin #
 def limit_run(command_line, instream = None, outstream = None,
-              errstream = None, limits = [], chroot = None):
+              errstream = None, limits = [], timeout = None,
+              chroot = None):
     """
     try to run command_line with 'nobody' permission in chroot directory
     within the limitations specify by limits argument. limits is a list of Limit.
@@ -82,8 +84,23 @@ def limit_run(command_line, instream = None, outstream = None,
         proc = subprocess.Popen(args, stdin = instream, stdout = outstream,
                                 stderr = errstream, preexec_fn = preexec,
                                 close_fds = True)
+        
+        def killer():
+            print('KILLED')
+            proc.kill()
+            profile.ok = False
+            profile.error = TIMEOUT
+        if timeout != None:
+            t = Timer(timeout, killer)
+            t.start()
         pid, exitcode, rusage = os.wait4(proc.pid, 0)
-        return _gen_profile(profile, rusage, limits, exitcode)
+        if timeout != None:
+            t.cancel()
+        
+        if profile.ok:
+            return _gen_profile(profile, rusage, limits, exitcode)
+        else: return profile
+
     except Exception as err:
         # system error
         try: proc.kill()
