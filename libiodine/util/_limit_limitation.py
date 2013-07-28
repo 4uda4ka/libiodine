@@ -1,4 +1,4 @@
-# File: util/limit.py
+# File: util/_limit_limitation.py
 # Author: Jason Lau
 
 # Copyright 2013 Jason Lau <i@dotkrnl.com>
@@ -18,7 +18,22 @@
 # You should have received a copy of the GNU General Public License
 # along with iodine. if not, see <http://www.gnu.org/licenses/>.
 
-from ._limit_class import *
-from ._limit_const import *
-from ._limit_limitation import *
-from ._limit_limit_run import *
+import resource
+from .limit import Limit
+
+class TimeLimit(Limit):
+    """
+    specify cpu(user + sys) time limitation,
+    TimeLimit(time), time should be specify in second.
+    """
+    
+    def __init__(self, time):
+        super().__init__()
+        time = float(time) # test number
+        self.description = 'cpu time'
+        self.value = time
+        self.rlimit = resource.RLIMIT_CPU
+        self.rlimit_value = int(time) + 1
+
+    def current(self, rusage):
+        return rusage.ru_utime + rusage.ru_stime
