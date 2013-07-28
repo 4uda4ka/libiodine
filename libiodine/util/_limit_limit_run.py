@@ -116,7 +116,7 @@ def limit_run(command_line, instream = None, outstream = None,
 def _gen_profile(profile, rusage, limits, exitcode = 0):
     profile.ok = True
     profile.exitcode = exitcode
-    if exitcode >= ERRCUT:
+    if exitcode != 0:
         # indicate an runtime error
         profile.ok = False
         profile.error = RUNTIME
