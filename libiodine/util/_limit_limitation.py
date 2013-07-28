@@ -37,3 +37,18 @@ class TimeLimit(Limit):
 
     def current(self, rusage, exitcode):
         return rusage.ru_utime + rusage.ru_stime
+
+
+class MemoryLimit(Limit):
+    """
+    specify memory(address space) limitation,
+    MemoryLimit(mem), mem should be specify in byte.
+    """
+
+    def __init__(self, mem):
+        super().__init__()
+        mem = int(mem) # test number
+        self.description = 'memory'
+        self.rlimit = resource.RLIMIT_AS
+        self.rlimit_value = mem
+
