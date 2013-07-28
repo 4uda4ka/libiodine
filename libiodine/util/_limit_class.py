@@ -27,11 +27,12 @@ class Limit:
     rlimit: hard limitation type passed to the kernel (Unix/Linux only).
     rlimit_value: hard limitation value passed to the kernel (Unix/Linux only).
     """
-    
-    description = ''
-    value = None
-    rlimit = None
-    rlimit_value = None
+
+    def __init__(self):
+        self.description = ''
+        self.value = None
+        self.rlimit = None
+        self.rlimit_value = None
     
     def current(pid):
         """
@@ -49,8 +50,9 @@ class LimitStatus:
     value: the limitation return value of current(pid).
     """
     
-    description = ''
-    value = None
+    def __init__(self):
+        self.description = ''
+        self.value = None
 # Class Limit Status End #
 
 # Class Run Profile Start #
@@ -63,14 +65,11 @@ class RunProfile:
     limits: a list of LimitStatus indicate limitation status
     warnings: a list of str, indicate everything should be log
     """
-    ok = False
-    exitcode = 0
-    error = ''
 
     def __init__(self):
-        """
-        init process for empty list
-        """
+        self.ok = False
+        self.exitcode = 0
+        self.error = ''
         self.limits = []
         self.warnings = []
 
