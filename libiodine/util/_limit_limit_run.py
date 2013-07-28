@@ -89,6 +89,8 @@ def limit_run(command_line, instream = None, outstream = None,
         return profile
     except Exception as err:
         # system error
+        try: proc.kill()
+        except: pass
         profile.error = SYSERROR
         profile.warnings += [str(err)]
         return profile
