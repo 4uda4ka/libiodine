@@ -29,12 +29,12 @@ class Limit:
     """
 
     def __init__(self):
-        self.description = ''
+        self.description = 'general limitation'
         self.value = None
         self.rlimit = None
         self.rlimit_value = None
     
-    def current(pid):
+    def current(self, pid):
         """
         get the current value of this limitation with pid.
         return value should be comparable with value
