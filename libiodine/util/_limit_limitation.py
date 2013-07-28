@@ -35,5 +35,5 @@ class TimeLimit(Limit):
         self.rlimit = resource.RLIMIT_CPU
         self.rlimit_value = int(time) + 1
 
-    def current(self, rusage):
+    def current(self, rusage, exitcode):
         return rusage.ru_utime + rusage.ru_stime

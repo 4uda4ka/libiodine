@@ -43,8 +43,7 @@ except:
 
 # Main Function limit_run Begin #
 def limit_run(command_line, instream = None, outstream = None,
-              errstream = None, timeout = None, limits = [],
-              chroot = None):
+              errstream = None, limits = [], chroot = None):
     """
     try to run command_line with 'nobody' permission in chroot directory
     within the limitations specify by limits argument. limits is a list of Limit.
@@ -53,6 +52,7 @@ def limit_run(command_line, instream = None, outstream = None,
     profile = RunProfile()
     if sys.platform.startswith('win32'):
         # sorry to windows user.
+        profile.ok = False
         profile.error = SYSERROR
         return profile
 
@@ -84,16 +84,11 @@ def limit_run(command_line, instream = None, outstream = None,
                                 close_fds = True)
         pid, exitcode, rusage = os.wait4(proc.pid, 0)
         return _gen_profile(profile, rusage, limits, exitcode)
-    except subprocess.TimeoutExpired:
-        # timeout
-        try: proc.kill()
-        except: pass
-        profile.error = TIMEOUT
-        return profile
     except Exception as err:
         # system error
         try: proc.kill()
         except: pass
+        profile.ok = False
         profile.error = SYSERROR
         profile.warnings += [str(err)]
         return profile
@@ -106,7 +101,7 @@ def _gen_profile(profile, rusage, limits, exitcode = 0):
     profile.exitcode = exitcode
     if exitcode >= ERRCUT:
         # indicate an runtime error
-        profile.ok = false
+        profile.ok = False
         profile.error = RUNTIME
     for limit in limits:
         if limit.value == None:
@@ -115,7 +110,7 @@ def _gen_profile(profile, rusage, limits, exitcode = 0):
         # else should return with profile
         ls = LimitStatus()
         ls.description = limit.description
-        ls.value = limit.current(rusage)
+        ls.value = limit.current(rusage, exitcode)
         profile.limits += [ls]
         if ls.value > limit.value:
             # limitation exceeded

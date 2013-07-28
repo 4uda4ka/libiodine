@@ -34,7 +34,7 @@ class Limit:
         self.rlimit = None
         self.rlimit_value = None
     
-    def current(self, rusage):
+    def current(self, rusage, exitcode):
         """
         get the current value of this limitation with rusage from getrusage().
         return value should be comparable with value
@@ -81,7 +81,7 @@ class RunProfile:
     """
 
     def __init__(self):
-        self.ok = False
+        self.ok = True
         self.exitcode = 0
         self.error = ''
         self.limits = []
