@@ -65,7 +65,7 @@ def limit_run(command_line, instream = None, outstream = None,
             log.warning(str(err) + ': unable to chroot')
         # setup resource kernel limitation
         for limit in limits:
-            if limit.rlimit:
+            if limit.rlimit != None:
                 resource.setrlimit(
                     limit.rlimit, # hard limit & soft limit
                     (limit.rlimit_value, limit.rlimit_value)
@@ -79,9 +79,11 @@ def limit_run(command_line, instream = None, outstream = None,
 
     args = shlex.split(command_line)
     try:
-        proc = subprocess.Popen(args, stdin=instream, stdout=outstream,
-                                stderr=errstream, preexec_fn = preexec)
-        exitcode = proc.wait(timeout)
+        proc = subprocess.Popen(args, stdin = instream, stdout = outstream,
+                                stderr = errstream, preexec_fn = preexec,
+                                close_fds = True)
+        pid, exitcode, rusage = os.wait4(proc.pid, 0)
+        return _gen_profile(profile, rusage, limits, exitcode)
     except subprocess.TimeoutExpired:
         # timeout
         try: proc.kill()
@@ -96,11 +98,10 @@ def limit_run(command_line, instream = None, outstream = None,
         profile.warnings += [str(err)]
         return profile
 
-    return _gen_profile(profile, proc.pid, limits, exitcode)
 # Main Funtion limit_run End
 
 # Utility Function Begin
-def _gen_profile(profile, pid, limits, exitcode = 0):
+def _gen_profile(profile, rusage, limits, exitcode = 0):
     profile.ok = True
     profile.exitcode = exitcode
     if exitcode >= ERRCUT:
@@ -114,8 +115,8 @@ def _gen_profile(profile, pid, limits, exitcode = 0):
         # else should return with profile
         ls = LimitStatus()
         ls.description = limit.description
-        ls.value = limit.current(pid)
-        profile.limits += ls
+        ls.value = limit.current(rusage)
+        profile.limits += [ls]
         if ls.value > limit.value:
             # limitation exceeded
             profile.ok = False

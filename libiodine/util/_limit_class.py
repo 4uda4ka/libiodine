@@ -34,12 +34,20 @@ class Limit:
         self.rlimit = None
         self.rlimit_value = None
     
-    def current(self, pid):
+    def current(self, rusage):
         """
-        get the current value of this limitation with pid.
+        get the current value of this limitation with rusage from getrusage().
         return value should be comparable with value
         """
         return None
+
+    def __str__(self):
+        return ('{description: \'' + self.description
+                + '\', value: ' + str(self.value)
+                + ', rlimit: ' + str(self.rlimit)
+                + ', self.rlimit_value: ' + str(self.rlimit_value) + '}')
+    def __repr__(self):
+        return self.__str__()
 # Class Limit End #
 
 # Class Limit Status Start #
@@ -53,6 +61,12 @@ class LimitStatus:
     def __init__(self):
         self.description = ''
         self.value = None
+
+    def __str__(self):
+        return ('{description: \'' + self.description
+                + '\', value: ' + str(self.value) + '}')
+    def __repr__(self):
+        return self.__str__()
 # Class Limit Status End #
 
 # Class Run Profile Start #
@@ -77,8 +91,8 @@ class RunProfile:
         """
         show all data inside
         """
-        return ('{ok:%d, exitcode:%d, error:\'%s\'' % (
-            self.ok , self.exitcode, self.error)
+        return (('{ok:%d, exitcode:%d, error:\'%s\'' % (
+            self.ok , self.exitcode, self.error))
                 + ', limits:' + self.limits.__str__()
                 + ', warnings:' + self.warnings.__str__() + '}')
     def __repr__(self):
