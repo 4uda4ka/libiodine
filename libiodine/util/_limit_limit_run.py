@@ -63,12 +63,6 @@ def limit_run(command_line, instream = None, outstream = None,
                 os.chroot(chroot)
         except Exception as err:
             log.warning(str(err) + ': unable to chroot')
-        # setuid for nobody
-        try:
-            os.setresgid(ngid, ngid, ngid)
-            os.setresuid(nuid, nuid, nuid)
-        except Exception as err:
-            log.warning(str(err) + ': unable to setuid')
         # setup resource kernel limitation
         for limit in limits:
             if limit.rlimit:
@@ -76,6 +70,12 @@ def limit_run(command_line, instream = None, outstream = None,
                     limit.rlimit, # hard limit & soft limit
                     (limit.rlimit_value, limit.rlimit_value)
                 )
+        # setuid for nobody
+        try:
+            os.setresgid(ngid, ngid, ngid)
+            os.setresuid(nuid, nuid, nuid)
+        except Exception as err:
+            log.warning(str(err) + ': unable to setuid')
 
     args = shlex.split(command_line)
     try:
@@ -84,7 +84,8 @@ def limit_run(command_line, instream = None, outstream = None,
         exitcode = proc.wait(timeout)
     except subprocess.TimeoutExpired:
         # timeout
-        proc.kill()
+        try: proc.kill()
+        except: pass
         profile.error = TIMEOUT
         return profile
     except Exception as err:
